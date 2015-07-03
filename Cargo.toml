@@ -1,0 +1,7 @@
+[package]
+name = "cpupower"
+version = "0.1.0"
+authors = ["Renat Galimov <renat2017@gmail.com>"]
+
+[dependencies]
+libc = "*"
