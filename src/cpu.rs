@@ -1,19 +1,23 @@
  //! # The main object for cpupower library's documentation
 //!
 
+extern crate errno;
+
 use std::ffi::CStr;
 use std::str;
 use std::string::String;
+use std::iter;
 
 use ::policy::*;
-use ::cpufreq::*;
+use ::base::*;
 use ::result::Result;
+use ::types::{CpuId, Frequency};
 
-pub struct CpuIterator {
+pub struct Iterator {
     next_id: usize,
 }
 
-impl Iterator for CpuIterator {
+impl iter::Iterator for Iterator {
     type Item = Cpu;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -37,33 +41,40 @@ pub struct Cpu {
 
 impl Cpu {
     /// Iterate over all Cpu's available in your system
-    pub fn get_all() -> CpuIterator {
-        CpuIterator {
+    pub fn get_all() -> Iterator {
+        Iterator {
             next_id: 0
         }
     }
 
     /// Check whether a Cpu with given ID exists in you system
-    pub fn exists(id: usize) -> bool {
+    pub fn exists(id: CpuId) -> bool {
         unsafe {
             cpufreq_cpu_exists(id as u32) == 0
         }
     }
 
-    pub fn new(id: usize) -> Cpu {
+    pub fn new(id: CpuId) -> Cpu {
         Cpu {
             id: id
         }
     }
 
+    /// Get frequency reported by hardware or by kernel
+    /// This function tries to get freq using call to hardware first,
+    /// and if that call fails - uses call to kernel
+    pub fn get_freq(&self) -> Result<Frequency> {
+        self.get_freq_hardware().or_else(|_|{self.get_freq_kernel()})
+    }
+
     /// Get frequency reported by your kernel
     /// According to the underlying library documentation -
     /// you don't need to be root to perform this operation
-    pub fn get_freq_kernel(&self) -> Result<u64> {
+    pub fn get_freq_kernel(&self) -> Result<Frequency> {
         unsafe {
             let frequency = cpufreq_get_freq_kernel(self.id as u32);
             match frequency {
-                0 => Err(::error::CpuPowerError::QueryError),
+                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
                 _ => Ok(frequency)
             }
         }
@@ -72,11 +83,11 @@ impl Cpu {
     /// Get frequency reported by your hardware
     /// According to the underlying library documentation -
     /// you should be root to perform this operation
-    pub fn get_freq_hardware(&self) -> Result<u64> {
+    pub fn get_freq_hardware(&self) -> Result<Frequency> {
         unsafe {
             let frequency = cpufreq_get_freq_hardware(self.id as u32);
             match frequency {
-                0 => Err(::error::CpuPowerError::QueryError),
+                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
                 _ => Ok(frequency)
             }
         }
@@ -86,20 +97,20 @@ impl Cpu {
         unsafe {
             let latency = cpufreq_get_transition_latency(self.id as u32);
             match latency {
-                0 => Err(::error::CpuPowerError::QueryError),
+                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
                 _ => Ok(latency)
             }
         }
     }
 
-    pub fn get_hardware_limits(&self) -> Result<(u64, u64)> {
+    pub fn get_hardware_limits(&self) -> Result<(Frequency, Frequency)> {
         unsafe {
             let mut min: u64 = 0;
             let mut max: u64 = 0;
             let response = cpufreq_get_hardware_limits(self.id as u32, &mut min as *mut u64, &mut max as *mut u64);
             match response {
                 0 => Ok((min, max)),
-                _ => Err(::error::CpuPowerError::QueryError),
+                _ => Err(::error::CpuPowerError::SystemError(errno::errno())),
             }
         }
     }
