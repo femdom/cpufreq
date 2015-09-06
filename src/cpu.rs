@@ -3,15 +3,17 @@
 
 extern crate errno;
 
-use std::ffi::CStr;
-use std::str;
-use std::string::String;
-use std::iter;
-
-use ::policy::*;
 use ::base::*;
+use ::policy::*;
 use ::result::Result;
 use ::types::{CpuId, Frequency};
+
+use std::ffi::CStr;
+use std::iter;
+use std::str;
+use std::string::String;
+use std::vec::Vec;
+use std::rc;
 
 pub struct Iterator {
     next_id: usize,
@@ -30,6 +32,7 @@ impl iter::Iterator for Iterator {
         }
     }
 }
+
 
 #[derive(Debug)]
 pub struct Cpu {
@@ -145,6 +148,51 @@ impl Cpu {
             cpufreq_put_policy(policy);
 
             result
+        }
+    }
+
+    pub fn get_available_governors(&self) -> Result<Vec<String>> {
+        unsafe {
+            let governor_list = cpufreq_get_available_governors(self.id as u32);
+
+            if governor_list.is_null() {
+                return Err(::error::CpuPowerError::SystemError(errno::errno()));
+            }
+
+            let mut governor = (*governor_list).first;
+
+            let mut governors = vec![];
+
+            loop {
+                if governor.is_null() {
+                    break;
+                }
+
+                let value = (*governor).governor;
+
+                if value.is_null() {
+                    cpufreq_put_available_governors(governor_list);
+                    return Err(::error::CpuPowerError::SystemError(errno::errno()));
+                }
+
+                let name_result = str::from_utf8(CStr::from_ptr(value).to_bytes());
+
+                match name_result {
+                    Err(err) => {
+                        cpufreq_put_available_governors(governor_list);
+                        return Err(From::from(err));
+                    },
+                    Ok(name) => {
+                        governors.push(String::from(name));
+                    }
+                }
+
+                governor = (*governor).next;
+            }
+
+            cpufreq_put_available_governors(governor_list);
+
+            return Ok(governors);
         }
     }
 }
