@@ -3,6 +3,7 @@
 //! headers using [rust-bindgen](https://github.com/crabtw/rust-bindgen) tool.
 
 
+mod adapters;
 mod base;
 mod cpu;
 mod policy;

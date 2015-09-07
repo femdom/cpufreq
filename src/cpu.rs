@@ -2,21 +2,30 @@
 //!
 
 extern crate errno;
+extern crate time;
 
 use ::base::*;
 use ::policy::*;
 use ::result::Result;
 use ::types::{CpuId, Frequency};
+use ::adapters::Extract;
 
 use std::ffi::CStr;
 use std::iter;
 use std::str;
 use std::string::String;
 use std::vec::Vec;
-use std::rc;
+
+
+
+pub struct Stats {
+    freq: Frequency,
+    time_in_state: u64
+}
+
 
 pub struct Iterator {
-    next_id: usize,
+    next_id: CpuId,
 }
 
 impl iter::Iterator for Iterator {
@@ -38,7 +47,7 @@ impl iter::Iterator for Iterator {
 pub struct Cpu {
     /// Id of current cpu
     /// Usually cpu id's starts from 0
-    id: usize
+    id: CpuId
 }
 
 
@@ -96,6 +105,7 @@ impl Cpu {
         }
     }
 
+
     pub fn get_transition_latency(&self) -> Result<u64> {
         unsafe {
             let latency = cpufreq_get_transition_latency(self.id as u32);
@@ -119,7 +129,7 @@ impl Cpu {
     }
 
     /// Get if of current processor
-    pub fn get_id(&self) -> usize {
+    pub fn get_id(&self) -> CpuId {
         self.id
     }
 
@@ -152,47 +162,11 @@ impl Cpu {
     }
 
     pub fn get_available_governors(&self) -> Result<Vec<String>> {
-        unsafe {
-            let governor_list = cpufreq_get_available_governors(self.id as u32);
-
-            if governor_list.is_null() {
-                return Err(::error::CpuPowerError::SystemError(errno::errno()));
-            }
-
-            let mut governor = (*governor_list).first;
-
-            let mut governors = vec![];
-
-            loop {
-                if governor.is_null() {
-                    break;
-                }
-
-                let value = (*governor).governor;
-
-                if value.is_null() {
-                    cpufreq_put_available_governors(governor_list);
-                    return Err(::error::CpuPowerError::SystemError(errno::errno()));
-                }
-
-                let name_result = str::from_utf8(CStr::from_ptr(value).to_bytes());
-
-                match name_result {
-                    Err(err) => {
-                        cpufreq_put_available_governors(governor_list);
-                        return Err(From::from(err));
-                    },
-                    Ok(name) => {
-                        governors.push(String::from(name));
-                    }
-                }
-
-                governor = (*governor).next;
-            }
-
-            cpufreq_put_available_governors(governor_list);
-
-            return Ok(governors);
-        }
+        ::adapters::AvailableGovernors::extract(self.get_id())
     }
+
+    pub fn get_available_frequencies(&self) -> Result<Vec<Frequency>> {
+        ::adapters::AvailableFrequencies::extract(self.get_id())
+    }
+
 }
