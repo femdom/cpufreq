@@ -1,4 +1,3 @@
-
 extern crate errno;
 
 use std::str;
@@ -7,8 +6,12 @@ use std::string::String;
 use ::base::*;
 use ::types::*;
 use ::result::Result;
+use ::cpu::Stat;
 
 struct CpufreqPolicy;
+
+
+
 
 
 pub trait Extract<R> {
@@ -124,6 +127,83 @@ impl Extract<Frequency> for AvailableFrequencies {
     fn get_value(current: *mut Self::Source) -> Result<Frequency> {
         unsafe {
             Ok((*current).frequency)
+        }
+    }
+
+}
+
+
+pub struct AffectedCpus;
+impl Extract<CpuId> for AffectedCpus {
+    type Source = Struct_cpufreq_affected_cpus;
+
+
+    fn get_struct(id: CpuId) -> *mut Self::Source {
+        unsafe {
+            return cpufreq_get_affected_cpus(id);
+        }
+    }
+
+    fn get_first(current: *mut Self::Source) -> *mut Self::Source {
+        unsafe {
+            (*current).first
+        }
+    }
+
+    fn get_next(current: *mut Self::Source) -> *mut Self::Source {
+        unsafe {
+            (*current).next
+        }
+    }
+
+    fn put_struct(list: *mut Self::Source) {
+        unsafe {
+            cpufreq_put_affected_cpus(list);
+        }
+    }
+
+    fn get_value(current: *mut Self::Source) -> Result<CpuId> {
+        unsafe {
+            Ok((*current).cpu)
+        }
+    }
+
+}
+
+
+pub struct Stats;
+impl Extract<Stat> for Stats {
+    type Source = Struct_cpufreq_stats;
+
+
+    fn get_struct(id: CpuId) -> *mut Self::Source {
+        unsafe {
+            let mut total_time: u64 = 0;
+            return cpufreq_get_stats(id, &mut total_time as *mut u64);
+        }
+    }
+
+    fn get_first(current: *mut Self::Source) -> *mut Self::Source {
+        unsafe {
+            (*current).first
+        }
+    }
+
+    fn get_next(current: *mut Self::Source) -> *mut Self::Source {
+        unsafe {
+            (*current).next
+        }
+    }
+
+    fn put_struct(list: *mut Self::Source) {
+        unsafe {
+            cpufreq_put_stats(list);
+        }
+    }
+
+    fn get_value(current: *mut Self::Source) -> Result<Stat> {
+        unsafe {
+            Ok(Stat{freq: (*current).frequency, time_in_state:  (*current).time_in_state})
         }
     }
 

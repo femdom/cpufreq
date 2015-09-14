@@ -15,12 +15,18 @@ use std::iter;
 use std::str;
 use std::string::String;
 use std::vec::Vec;
+use std::fmt;
 
 
+pub struct Stat {
+    pub freq: Frequency,
+    pub time_in_state: u64
+}
 
-pub struct Stats {
-    freq: Frequency,
-    time_in_state: u64
+impl fmt::Display for Stat {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Stat{{freq: {}, time_in_state: {}}}", self.freq, self.time_in_state)
+    }
 }
 
 
@@ -105,6 +111,18 @@ impl Cpu {
         }
     }
 
+    /// Set frequency for the given CPU
+    /// You should have root privileges to do that
+    pub fn set_freq(&self, freq: Frequency) -> Result<&Cpu> {
+        unsafe {
+            let result = cpufreq_set_frequency(self.id, freq);
+
+            match result {
+                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
+                _ => Ok(&self)
+            }
+        }
+    }
 
     pub fn get_transition_latency(&self) -> Result<u64> {
         unsafe {
@@ -143,12 +161,12 @@ impl Cpu {
         }
     }
 
-    pub fn get_policy(&self) -> Policy {
+    pub fn get_policy(&self) -> Result<Policy> {
         unsafe {
             let policy = cpufreq_get_policy(self.id as u32);
 
             if policy.is_null() {
-                panic!()
+                return Err(::error::CpuPowerError::SystemError(errno::errno()))
             }
 
             let min = (*policy).min;
@@ -157,7 +175,7 @@ impl Cpu {
             let result = Policy::new(min, max, governor_name);
             cpufreq_put_policy(policy);
 
-            result
+            Ok(result)
         }
     }
 
@@ -169,4 +187,21 @@ impl Cpu {
         ::adapters::AvailableFrequencies::extract(self.get_id())
     }
 
+    pub fn get_affected_cpus(&self) -> Result<Vec<Cpu>> {
+        let cpus = try!(::adapters::AffectedCpus::extract(self.get_id()));
+        let mut result = Vec::<Cpu>::new();
+        result.extend(cpus.iter().map(|cpu_id| Cpu::new(*cpu_id)));
+        Ok(result)
+    }
+
+    pub fn get_stats(&self) -> Result<Vec<Stat>> {
+        ::adapters::Stats::extract(self.get_id())
+    }
+}
+
+
+impl fmt::Display for Cpu {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Cpu{{id: {}, frequency: {}}}", self.get_id(), self.get_freq().map(|freq| freq.to_string()).unwrap_or(String::from("Unknown")))
+    }
 }

@@ -3,16 +3,9 @@ name = "cpupower"
 version = "0.1.1"
 authors = ["Renat Galimov <renat2017@gmail.com>"]
 
-[lib]
-name = "cpupower"
-path = "src/lib.rs"
-
-[[bin]]
-name = "test"
-path = "src/bin.rs"
-
 [dependencies]
 libc = "*"
+time ="0.1"
 
 [dependencies.errno]
 version = "0.1.4"
