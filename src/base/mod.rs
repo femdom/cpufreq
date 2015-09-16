@@ -28,6 +28,7 @@ impl ::std::clone::Clone for Struct_cpufreq_available_governors {
 impl ::std::default::Default for Struct_cpufreq_available_governors {
     fn default() -> Self { unsafe { ::std::mem::zeroed() } }
 }
+
 #[repr(C)]
 #[derive(Copy)]
 pub struct Struct_cpufreq_available_frequencies {
