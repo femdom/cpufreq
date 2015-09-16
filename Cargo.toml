@@ -1,7 +1,11 @@
 [package]
 name = "cpupower"
-version = "0.1.0"
+version = "0.1"
 authors = ["Renat Galimov <renat2017@gmail.com>"]
 
 [dependencies]
 libc = "*"
+time ="0.1"
+
+[dependencies.errno]
+version = "0.1.4"
