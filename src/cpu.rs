@@ -3,6 +3,7 @@
 
 extern crate errno;
 extern crate time;
+extern crate libc;
 
 use ::base::*;
 use ::policy::*;
@@ -10,7 +11,7 @@ use ::result::Result;
 use ::types::{CpuId, Frequency};
 use ::adapters::Extract;
 
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 use std::iter;
 use std::str;
 use std::string::String;
@@ -34,6 +35,8 @@ pub struct Iterator {
     next_id: CpuId,
 }
 
+
+/// Iterate over all cpus
 impl iter::Iterator for Iterator {
     type Item = Cpu;
 
@@ -114,12 +117,20 @@ impl Cpu {
     /// Set frequency for the given CPU
     /// You should have root privileges to do that
     pub fn set_freq(&self, freq: Frequency) -> Result<&Cpu> {
+        let actual = try!(self.get_freq());
+
         unsafe {
             let result = cpufreq_set_frequency(self.id, freq);
 
             match result {
-                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
-                _ => Ok(&self)
+                0 => Ok(&self),
+                _ => Err(
+                    ::error::CpuPowerError::FrequencyNotSet{
+                        id: self.id,
+                        actual: actual,
+                        requested: freq,
+                        errno: errno::errno()
+                    })
             }
         }
     }
@@ -130,6 +141,37 @@ impl Cpu {
             match latency {
                 0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
                 _ => Ok(latency)
+            }
+        }
+    }
+
+    pub fn modify_policy_max(&self, max: Frequency) -> Result<()> {
+        unsafe {
+            let result = cpufreq_modify_policy_max(self.id as u32, max);
+            match result {
+                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
+                _ => Ok(())
+            }
+        }
+    }
+
+    pub fn modify_policy_min(&self, min: Frequency) -> Result<()> {
+        unsafe {
+            let result = cpufreq_modify_policy_min(self.id as u32, min);
+            match result {
+                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
+                _ => Ok(())
+            }
+        }
+    }
+
+    pub fn modify_policy_governor(&self, governor: &str) -> Result<()> {
+        let mut governor = try!(CString::new(governor));
+        unsafe {
+            let result = cpufreq_modify_policy_governor(self.id as u32, governor.as_ptr() as *mut libc::c_char);
+            match result {
+                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
+                _ => Ok(())
             }
         }
     }
@@ -154,6 +196,7 @@ impl Cpu {
     pub fn get_driver(&self) -> String {
         unsafe {
             let driver = cpufreq_get_driver(self.id as u32);
+            // TODO: Too complicated
             let result = str::from_utf8(CStr::from_ptr(driver).to_bytes()).unwrap().to_owned();
             cpufreq_put_driver(driver);
 
@@ -176,6 +219,23 @@ impl Cpu {
             cpufreq_put_policy(policy);
 
             Ok(result)
+        }
+    }
+
+    pub fn set_policy(&self, policy: &Policy) -> Result<()> {
+        unsafe {
+            let governor_name = try!(CString::new(policy.governor.clone())); // TODO: Unnecessary here
+            let mut policy = Struct_cpufreq_policy{
+                min: policy.min,
+                max: policy.max,
+                governor: governor_name.as_ptr() as *mut libc::c_char
+            };
+            let result = cpufreq_set_policy(self.id as u32, &mut policy as *mut Struct_cpufreq_policy);
+
+            match result {
+                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
+                _ => Ok(())
+            }
         }
     }
 
