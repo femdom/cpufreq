@@ -2,7 +2,6 @@
 //!
 
 extern crate errno;
-extern crate time;
 extern crate libc;
 
 use ::base::*;
@@ -135,6 +134,8 @@ impl Cpu {
         }
     }
 
+    /// Determine CPUs transition latency
+    /// Returns: transition latency in nanoseconds (10^(-9) s)
     pub fn get_transition_latency(&self) -> Result<u64> {
         unsafe {
             let latency = cpufreq_get_transition_latency(self.id as u32);
@@ -145,6 +146,7 @@ impl Cpu {
         }
     }
 
+    /// Modify current policy by changing it's max frequency
     pub fn modify_policy_max(&self, max: Frequency) -> Result<()> {
         unsafe {
             let result = cpufreq_modify_policy_max(self.id as u32, max);
@@ -155,6 +157,7 @@ impl Cpu {
         }
     }
 
+    /// Modify current policy by changing it's min frequency
     pub fn modify_policy_min(&self, min: Frequency) -> Result<()> {
         unsafe {
             let result = cpufreq_modify_policy_min(self.id as u32, min);
@@ -165,8 +168,9 @@ impl Cpu {
         }
     }
 
+    /// Modify current policy by changing it's governor
     pub fn modify_policy_governor(&self, governor: &str) -> Result<()> {
-        let mut governor = try!(CString::new(governor));
+        let governor = try!(CString::new(governor));
         unsafe {
             let result = cpufreq_modify_policy_governor(self.id as u32, governor.as_ptr() as *mut libc::c_char);
             match result {
@@ -176,6 +180,10 @@ impl Cpu {
         }
     }
 
+    /// Determine hardware CPU frequency limits
+    ///
+    /// These may be limited further by thermal, energy or other
+    /// considerations by cpufreq policy notifiers in the kernel.
     pub fn get_hardware_limits(&self) -> Result<(Frequency, Frequency)> {
         unsafe {
             let mut min: u64 = 0;
@@ -188,11 +196,12 @@ impl Cpu {
         }
     }
 
-    /// Get if of current processor
+    /// Get if of the current processor
     pub fn get_id(&self) -> CpuId {
         self.id
     }
 
+    /// Determine CPUfreq driver used
     pub fn get_driver(&self) -> String {
         unsafe {
             let driver = cpufreq_get_driver(self.id as u32);
@@ -204,6 +213,7 @@ impl Cpu {
         }
     }
 
+    /// Determine CPUfreq policy used
     pub fn get_policy(&self) -> Result<Policy> {
         unsafe {
             let policy = cpufreq_get_policy(self.id as u32);
@@ -222,6 +232,9 @@ impl Cpu {
         }
     }
 
+    /// Set new CPUfreq policy to use
+    /// This tries to set the passed policy as new policy as close as possible,
+    /// but results may differ depending e.g. on governors being available.
     pub fn set_policy(&self, policy: &Policy) -> Result<()> {
         unsafe {
             let governor_name = try!(CString::new(policy.governor.clone())); // TODO: Unnecessary here
@@ -239,6 +252,9 @@ impl Cpu {
         }
     }
 
+    /// determine CPUfreq governors currently available
+    ///
+    /// may be modified by modprobe'ing or rmmod'ing other governors
     pub fn get_available_governors(&self) -> Result<Vec<String>> {
         ::adapters::AvailableGovernors::extract(self.get_id())
     }
@@ -247,6 +263,7 @@ impl Cpu {
         ::adapters::AvailableFrequencies::extract(self.get_id())
     }
 
+
     pub fn get_affected_cpus(&self) -> Result<Vec<Cpu>> {
         let cpus = try!(::adapters::AffectedCpus::extract(self.get_id()));
         let mut result = Vec::<Cpu>::new();
@@ -254,6 +271,7 @@ impl Cpu {
         Ok(result)
     }
 
+    /// determine stats for cpufreq subsystem
     pub fn get_stats(&self) -> Result<Vec<Stat>> {
         ::adapters::Stats::extract(self.get_id())
     }

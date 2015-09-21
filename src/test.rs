@@ -5,7 +5,6 @@ use std::iter::Iterator;
 
 use ::cpu::Cpu;
 
-
 #[test]
 fn get_hardware_limit_returns_limits() {
     let cpu = super::Cpu::get_all().nth(0).unwrap();
@@ -33,7 +32,7 @@ fn get_freq_hardware_returns_frequency_if_root() {
         euid = libc::geteuid();
     }
 
-    if (euid == 0) {
+    if euid == 0 {
         cpu.get_freq_hardware()
             .map(|freq| assert!(freq > 0))
             .unwrap();
@@ -44,4 +43,12 @@ fn get_freq_hardware_returns_frequency_if_root() {
         };
 
     }
+}
+
+#[test]
+fn get_freq_returns_frequency() {
+    Cpu::get_all()
+        .nth(0).unwrap()
+        .get_freq()
+        .map(|freq| assert!(freq > 0)).unwrap();
 }
