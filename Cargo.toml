@@ -6,12 +6,14 @@ include = [
     "**/*.rs",
     "Cargo.toml",
 ]
-
+build = "build.rs"
 description = "Rust interface to the linux cpufreq library"
 documentation = "https://femdom.github.io/cpufreq/cpupower/"
 repository = "https://github.com/femdom/cpufreq"
 keywords = ["ffi", "bindings", "linux", "cpufreq", "cpupower"]
 license = "MIT"
+libs = "cpupower"
+
 
 [dependencies]
 libc = "*"
