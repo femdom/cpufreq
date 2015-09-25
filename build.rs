@@ -2,12 +2,19 @@ use std::process::Command;
 
 
 fn main() {
-    let status = Command::new("ld")
-        .arg("-lcpupower").status().unwrap();
+    let mut status = Command::new("ld")
+        .arg("-lcpupower").status();
 
-    if status.success() {
+    if status.is_ok() && status.unwrap().success() {
         println!("cargo:rustc-link-lib=cpupower");
-    } else {
+        return;
+    }
+
+    status = Command::new("ld")
+        .arg("-lcpufreq").status();
+
+    if status.is_ok() && status.unwrap().success() {
         println!("cargo:rustc-link-lib=cpufreq");
+        return;
     }
 }
