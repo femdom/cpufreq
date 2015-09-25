@@ -69,7 +69,7 @@ impl ::std::clone::Clone for Struct_cpufreq_stats {
 impl ::std::default::Default for Struct_cpufreq_stats {
     fn default() -> Self { unsafe { ::std::mem::zeroed() } }
 }
-#[link(name = "cpupower")]
+
 extern "C" {
     pub fn cpufreq_cpu_exists(cpu: libc::c_uint) -> libc::c_int;
     pub fn cpufreq_get_freq_kernel(cpu: libc::c_uint) -> libc::c_ulong;
