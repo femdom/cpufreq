@@ -11,6 +11,7 @@ mod result;
 mod error;
 mod test;
 mod types;
+mod stat;
 
 
 pub use types::*;

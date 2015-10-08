@@ -20,3 +20,6 @@ libc = "*"
 
 [dependencies.errno]
 version = "0.1.4"
+
+[build-dependencies]
+gcc = "*"

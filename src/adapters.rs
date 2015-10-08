@@ -6,7 +6,7 @@ use std::string::String;
 use ::base::*;
 use ::types::*;
 use ::result::Result;
-use ::cpu::Stat;
+use ::stat::Stat;
 
 struct CpufreqPolicy;
 
