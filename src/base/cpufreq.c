@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cpufreq.h"
 #include "sysfs.h"
 
 int cpufreq_cpu_exists(unsigned int cpu)
