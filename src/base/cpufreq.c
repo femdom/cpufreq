@@ -9,18 +9,44 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "cpufreq.h"
 #include "sysfs.h"
 
-int cpufreq_cpu_exists(unsigned int cpu)
-{
-  return sysfs_cpu_exists(cpu);
+#define BUFFER_SIZE 512
+
+struct Cpu {
+  long freq;
+  long latency;
+  long limits[2];
+  long policy_min;
+  long policy_max;
+  char policy_governor[BUFFER_SIZE];
+};
+
+
+static struct Cpu all_cpus[] = {
+  {2400000, 1000, {100000, 1000000}, 100000, 1000000, {"performance"}},
+  {-EACCES, -EACCES, {-EACCES, -EACCES}, -EACCES, -EACCES, {"a"}}
+};
+
+
+inline unsigned long _process_result(long result) {
+  if (result >= 0) {
+    return result;
+  } else {
+    errno = -result;
+    return result;
+  }
 }
 
-unsigned long cpufreq_get_freq_kernel(unsigned int cpu)
-{
-	return sysfs_get_freq_kernel(cpu);
+int cpufreq_cpu_exists(unsigned int cpu) {
+  return cpu <= 1 ? 0 : -1;
+}
+
+unsigned long cpufreq_get_freq_kernel(unsigned int cpu) {
+  return _process_result(all_cpus[cpu].freq);
 }
 
 unsigned long cpufreq_get_freq_hardware(unsigned int cpu)
@@ -30,21 +56,38 @@ unsigned long cpufreq_get_freq_hardware(unsigned int cpu)
     return 0;
   }
 
-  return sysfs_get_freq_hardware(cpu);
+  return cpufreq_get_freq_kernel(cpu);
 }
 
 unsigned long cpufreq_get_transition_latency(unsigned int cpu)
 {
-	return sysfs_get_freq_transition_latency(cpu);
+  return _process_result(all_cpus[cpu].latency);
 }
 
 int cpufreq_get_hardware_limits(unsigned int cpu,
 				unsigned long *min,
 				unsigned long *max)
 {
-	if ((!min) || (!max))
-		return -EINVAL;
-	return sysfs_get_freq_hardware_limits(cpu, min, max);
+  if ((!min) || (!max))
+    return -EINVAL;
+
+  long cpu_min = all_cpus[cpu].limits[0];
+  long cpu_max = all_cpus[cpu].limits[1];
+
+  if (cpu_min < 0) {
+    errno = -cpu_min;
+    return cpu_min;
+  }
+
+  if (cpu_max < 0) {
+    errno = -cpu_max;
+    return cpu_max;
+  }
+
+  *min = cpu_min;
+  *max = cpu_max;
+
+  return 0;
 }
 
 char *cpufreq_get_driver(unsigned int cpu)
@@ -59,9 +102,36 @@ void cpufreq_put_driver(char *ptr)
 	free(ptr);
 }
 
-struct cpufreq_policy *cpufreq_get_policy(unsigned int cpu)
-{
-	return sysfs_get_freq_policy(cpu);
+struct cpufreq_policy *cpufreq_get_policy(unsigned int cpu) {
+  long min = all_cpus[cpu].policy_min;
+  long max = all_cpus[cpu].policy_max;
+
+  if (min < 0) {
+    errno = -max;
+    return NULL;
+  }
+
+  if (max < 0) {
+    errno = -max;
+    return NULL;
+  }
+
+  struct cpufreq_policy* policy = malloc(sizeof(struct cpufreq_policy));
+
+  if (!policy) {
+    return NULL;
+  }
+
+  policy->governor = strndup(all_cpus[cpu].policy_governor, BUFFER_SIZE);
+  if (!policy->governor) {
+    free(policy);
+    return NULL;
+  }
+
+  policy->min = min;
+  policy->max = max;
+
+  return policy;
 }
 
 void cpufreq_put_policy(struct cpufreq_policy *policy)

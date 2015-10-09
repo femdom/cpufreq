@@ -16,52 +16,21 @@ use std::result;
 
 fn get_max_cpu() -> usize {
     if cfg!(cpufreq = "mock") {
-        0
+        1
     } else {
         // Dirty hack
         Cpu::get_all().count() - 1
     }
 }
 
-fn copy_directories<P: AsRef<Path>>(src: P, dst: P) -> io::Result<()> {
-    let src: &Path = src.as_ref();
-    let dst: &Path = dst.as_ref();
-
-    fs::create_dir(dst);
-
-    for entry in try!(fs::read_dir(src)) {
-        let entry = try!(entry);
-
-        if try!(fs::metadata(entry.path())).is_dir() {
-            entry.path().file_name()
-                .map(|name| copy_directories(entry.path().as_path(), dst.join(name).as_path()));
-        } else {
-            entry.path().file_name()
-                .map(|name| fs::copy(entry.path(), dst.join(name)));
-        }
-    }
-
-    Ok(())
-}
-
-fn setup()  {
-    if cfg!(cpufreq = "mock") {
-        for i in 0..get_max_cpu() + 1 {
-            copy_directories("./tests/cpu", format!("./tests/cpu{}", i).as_ref()).unwrap();
-        }
-    }
-}
-
 mod policy {
     extern crate libc;
     extern crate errno;
-    use super::setup;
     use ::cpu::Cpu;
     use ::policy::Policy;
 
     #[test]
     fn get_policy_can_return_real_policy_on_normal_operation() {
-        setup();
         let cpu = Cpu::new(0);
         cpu.get_policy().unwrap();
     }
@@ -76,7 +45,6 @@ mod policy {
 
     #[test]
     fn set_policy_does_really_set_policy() {
-        setup();
         let cpu = Cpu::new(0);
 
         let euid: libc::uid_t;
@@ -100,25 +68,21 @@ mod policy {
 
 #[test]
 fn exists_returns_true_if_cpu_exists() {
-    setup();
     assert!(Cpu::exists(0));
 }
 
 #[test]
 fn exists_returns_false_if_cpu_doesnt_exist() {
-    setup();
     assert!(!Cpu::exists(get_max_cpu() as u32 + 1));
 }
 
 #[test]
 fn get_all_returns_all_existing_cpus() {
-    setup();
     assert_eq!(Cpu::get_all().count(), get_max_cpu() + 1);
 }
 
 #[test]
 fn get_hardware_limit_returns_limits() {
-    setup();
     let cpu = super::Cpu::new(0);
 
     cpu.get_hardware_limits()
@@ -128,7 +92,6 @@ fn get_hardware_limit_returns_limits() {
 
 #[test]
 fn get_freq_kernel_returns_frequency() {
-    setup();
     let cpu = Cpu::new(0);
     cpu.get_freq_kernel()
         .map(|freq| assert!(freq > 0))
@@ -137,7 +100,6 @@ fn get_freq_kernel_returns_frequency() {
 
 #[test]
 fn get_freq_hardware_returns_frequency_if_root() {
-    setup();
     let cpu = Cpu::new(0);
 
     let euid: libc::uid_t;
