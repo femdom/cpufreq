@@ -213,10 +213,6 @@ unsigned long sysfs_get_freq_kernel(unsigned int cpu)
 
 unsigned long sysfs_get_freq_hardware(unsigned int cpu)
 {
-  if (geteuid() != 0) {
-    errno = EACCES;
-    return 0;
-  }
   return sysfs_cpufreq_get_one_value(cpu, CPUINFO_CUR_FREQ);
 }
 

@@ -2,9 +2,4 @@ language: rust
 rust:
   - 1.2.0
 
-addons:
-  apt:
-    packages:
-    - libcpufreq0
-
 sudo: false

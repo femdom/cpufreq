@@ -25,6 +25,11 @@ unsigned long cpufreq_get_freq_kernel(unsigned int cpu)
 
 unsigned long cpufreq_get_freq_hardware(unsigned int cpu)
 {
+  if (geteuid() != 0) {
+    errno = EACCES;
+    return 0;
+  }
+
   return sysfs_get_freq_hardware(cpu);
 }
 
@@ -151,6 +156,11 @@ int cpufreq_set_policy(unsigned int cpu, struct cpufreq_policy *policy)
 {
 	if (!policy || !(policy->governor))
 		return -EINVAL;
+
+    if (geteuid() != 0) {
+      errno = EACCES;
+      return -EACCES;
+    }
 
 	return sysfs_set_freq_policy(cpu, policy);
 }
