@@ -2,6 +2,7 @@ extern crate gcc;
 
 use std::process::Command;
 
+
 fn main() {
     let mut status = Command::new("ld")
         .arg("-lcpupower").status();
@@ -22,6 +23,5 @@ fn main() {
     }
 
     println!("cargo:rustc-cfg=cpufreq=\"mock\"");
-
     gcc::compile_library("libcpufreq.a", &["src/base/cpufreq.c", "src/base/sysfs.c"]);
 }
