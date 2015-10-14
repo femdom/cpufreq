@@ -6,12 +6,9 @@ use std::string::String;
 use ::base::*;
 use ::types::*;
 use ::result::Result;
-use ::cpu::Stat;
+use ::stat::Stat;
 
 struct CpufreqPolicy;
-
-
-
 
 
 pub trait Extract<R> {
@@ -27,7 +24,13 @@ pub trait Extract<R> {
         let list = Self::get_struct(id);
 
         if list.is_null() {
-            return Err(::error::CpuPowerError::SystemError(errno::errno()));
+            let errno = errno::errno();
+
+            if errno.0 == 0 {
+                return Err(::error::CpuPowerError::Unknown);
+            } else {
+                return Err(::error::CpuPowerError::SystemError(errno::errno()));
+            }
         }
 
         let mut current = Self::get_first(list);
@@ -167,9 +170,44 @@ impl Extract<CpuId> for AffectedCpus {
             Ok((*current).cpu)
         }
     }
-
 }
 
+
+pub struct RelatedCpus;
+impl Extract<CpuId> for RelatedCpus {
+    type Source = Struct_cpufreq_affected_cpus;
+
+
+    fn get_struct(id: CpuId) -> *mut Self::Source {
+        unsafe {
+            return cpufreq_get_related_cpus(id);
+        }
+    }
+
+    fn get_first(current: *mut Self::Source) -> *mut Self::Source {
+        unsafe {
+            (*current).first
+        }
+    }
+
+    fn get_next(current: *mut Self::Source) -> *mut Self::Source {
+        unsafe {
+            (*current).next
+        }
+    }
+
+    fn put_struct(list: *mut Self::Source) {
+        unsafe {
+            cpufreq_put_related_cpus(list);
+        }
+    }
+
+    fn get_value(current: *mut Self::Source) -> Result<CpuId> {
+        unsafe {
+            Ok((*current).cpu)
+        }
+    }
+}
 
 pub struct Stats;
 impl Extract<Stat> for Stats {
