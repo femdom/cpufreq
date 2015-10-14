@@ -132,8 +132,8 @@ impl Cpu {
         unsafe {
             let result = cpufreq_modify_policy_max(self.id as u32, max);
             match result {
-                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
-                _ => Ok(())
+                0 => Ok(()),
+                _ => Err(::error::CpuPowerError::SystemError(errno::errno()))
             }
         }
     }
@@ -143,8 +143,8 @@ impl Cpu {
         unsafe {
             let result = cpufreq_modify_policy_min(self.id as u32, min);
             match result {
-                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
-                _ => Ok(())
+                0 => Ok(()),
+                _ => Err(::error::CpuPowerError::SystemError(errno::errno()))
             }
         }
     }
@@ -155,8 +155,8 @@ impl Cpu {
         unsafe {
             let result = cpufreq_modify_policy_governor(self.id as u32, governor.as_ptr() as *mut libc::c_char);
             match result {
-                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
-                _ => Ok(())
+                0 => Ok(()),
+                _ => Err(::error::CpuPowerError::SystemError(errno::errno()))
             }
         }
     }

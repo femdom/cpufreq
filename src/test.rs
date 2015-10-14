@@ -130,7 +130,8 @@ fn set_freq_sets_frequency_if_root() {
     }
 
     if euid == 0 {
-        let (min, max) = cpu.get_hardware_limits().unwrap();
+        let min = cpu.get_policy().unwrap().min;
+        let max = cpu.get_policy().unwrap().max;
         assert!(0 < min);
         assert!(0 < max);
         cpu.set_freq(min).unwrap();
@@ -149,6 +150,86 @@ fn set_freq_sets_frequency_if_root() {
 fn get_transition_latency_returns_latency() {
     let cpu = Cpu::new(0);
     assert!(0 < cpu.get_transition_latency().unwrap());
+}
+
+
+#[test]
+fn modify_policy_max_can_modify_if_root() {
+    let cpu = Cpu::new(0);
+
+    let euid: libc::uid_t;
+
+    unsafe {
+        euid = libc::geteuid();
+    }
+
+    let (min, max) = cpu.get_hardware_limits().unwrap();
+    assert!(0 < min);
+    assert!(0 < max);
+
+    if euid == 0 {
+        cpu.modify_policy_max(min).unwrap();
+        assert_eq!(cpu.get_policy().unwrap().max, min);
+        cpu.modify_policy_max(max).unwrap();
+        assert_eq!(cpu.get_policy().unwrap().max, max);
+    } else {
+        match cpu.modify_policy_max(min).unwrap_err() {
+            ::error::CpuPowerError::SystemError(errno::Errno(13)) => (),
+            error => panic!("Wrong error appeared: {}", error)
+        };
+    }
+}
+
+#[test]
+fn modify_policy_min_can_modify_if_root() {
+    let cpu = Cpu::new(0);
+
+    let euid: libc::uid_t;
+
+    unsafe {
+        euid = libc::geteuid();
+    }
+
+    let (min, max) = cpu.get_hardware_limits().unwrap();
+    assert!(0 < min);
+    assert!(0 < max);
+
+    if euid == 0 {
+        cpu.modify_policy_min(min).unwrap();
+        assert_eq!(cpu.get_policy().unwrap().min, min);
+        cpu.modify_policy_min(max).unwrap();
+        assert_eq!(cpu.get_policy().unwrap().min, max);
+    } else {
+        match cpu.modify_policy_min(min).unwrap_err() {
+            ::error::CpuPowerError::SystemError(errno::Errno(13)) => (),
+            error => panic!("Wrong error appeared: {}", error)
+        };
+    }
+}
+
+#[test]
+fn modify_policy_governor_can_modify_if_root() {
+    let cpu = Cpu::new(0);
+
+    let euid: libc::uid_t;
+
+    unsafe {
+        euid = libc::geteuid();
+    }
+
+    let governors = cpu.get_available_governors().unwrap();
+
+    if euid == 0 {
+        for governor in governors {
+            cpu.modify_policy_governor(governor.as_ref()).unwrap();
+            assert_eq!(cpu.get_policy().unwrap().governor, governor);
+        }
+    } else {
+        match cpu.modify_policy_governor(governors.first().unwrap().as_ref()).unwrap_err() {
+            ::error::CpuPowerError::SystemError(errno::Errno(13)) => (),
+            error => panic!("Wrong error appeared: {}", error)
+        };
+    }
 }
 
 #[test]

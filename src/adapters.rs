@@ -24,7 +24,13 @@ pub trait Extract<R> {
         let list = Self::get_struct(id);
 
         if list.is_null() {
-            return Err(::error::CpuPowerError::SystemError(errno::errno()));
+            let errno = errno::errno();
+
+            if errno.0 == 0 {
+                return Err(::error::CpuPowerError::Unknown);
+            } else {
+                return Err(::error::CpuPowerError::SystemError(errno::errno()));
+            }
         }
 
         let mut current = Self::get_first(list);

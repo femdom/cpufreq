@@ -32,7 +32,7 @@ static struct Cpu all_cpus[MAX_CPUS] = {
 };
 
 
-inline unsigned long _process_result(long result) {
+unsigned long _process_result(long result) {
   if (result >= 0) {
     return result;
   } else {
@@ -181,7 +181,45 @@ struct cpufreq_available_governors *cpufreq_get_available_governors(unsigned int
     return NULL;
   }
 
-  return sysfs_get_freq_available_governors(cpu);
+  struct cpufreq_available_governors *first = NULL;
+  struct cpufreq_available_governors *current = NULL;
+
+  char* governors[] = {
+    "conservative", "ondemand", "powersave", "userspace", "performance"
+  };
+
+  unsigned long i;
+  for(i = 0; i < 5; i++) {
+    if (governors[i] == NULL) {
+      continue;
+    }
+
+    struct cpufreq_available_governors *next = malloc(sizeof(struct cpufreq_available_governors));
+
+    if (!next) {
+      cpufreq_put_available_governors(first);
+      return NULL;
+    }
+
+    if (current) {
+      current->next = next;
+    }
+    current = next;
+    current->governor = strndup(governors[i], BUFFER_SIZE);
+
+    if (!current->governor) {
+      cpufreq_put_available_governors(first);
+      return NULL;
+    }
+
+    if (first == NULL) {
+      first = current;
+    }
+
+    current->first = first;
+  }
+
+  return first;
 }
 
 void cpufreq_put_available_governors(struct cpufreq_available_governors *any)
@@ -307,34 +345,51 @@ int cpufreq_set_policy(unsigned int cpu, struct cpufreq_policy *policy)
 
 int cpufreq_modify_policy_min(unsigned int cpu, unsigned long min_freq)
 {
-  if (cpu >= MAX_CPUS) {
+  if (MAX_CPUS <= cpu) {
     errno = ENOENT;
     return -ENOENT;
   }
 
-  return sysfs_modify_freq_policy_min(cpu, min_freq);
+  if (geteuid() != 0) {
+    errno = EACCES;
+    return -EACCES;
+  }
+
+  all_cpus[cpu].policy_min = min_freq;
+  return 0;
 }
 
 
 int cpufreq_modify_policy_max(unsigned int cpu, unsigned long max_freq)
 {
-  if (cpu >= MAX_CPUS) {
+  if (MAX_CPUS <= cpu) {
     errno = ENOENT;
     return -ENOENT;
   }
 
-  return sysfs_modify_freq_policy_max(cpu, max_freq);
-}
+  if (geteuid() != 0) {
+    errno = EACCES;
+    return -EACCES;
+  }
 
+  all_cpus[cpu].policy_max = max_freq;
+  return 0;
+}
 
 int cpufreq_modify_policy_governor(unsigned int cpu, char *governor)
 {
-  if (cpu >= MAX_CPUS) {
+  if (MAX_CPUS <= cpu) {
     errno = ENOENT;
     return -ENOENT;
   }
 
-  return sysfs_modify_freq_policy_governor(cpu, governor);
+  if (geteuid() != 0) {
+    errno = EACCES;
+    return -EACCES;
+  }
+
+  strncpy(all_cpus[cpu].policy_governor, governor, BUFFER_SIZE);
+  return 0;
 }
 
 int cpufreq_set_frequency(unsigned int cpu, unsigned long target_frequency)
