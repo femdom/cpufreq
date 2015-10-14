@@ -1,4 +1,4 @@
- //! # The main object for cpupower library's documentation
+//! # The main object for cpupower library's documentation
 //!
 
 extern crate errno;
@@ -6,6 +6,7 @@ extern crate libc;
 
 use ::base::*;
 use ::policy::*;
+use ::stat::*;
 use ::result::Result;
 use ::types::{CpuId, Frequency};
 use ::adapters::Extract;
@@ -16,18 +17,6 @@ use std::str;
 use std::string::String;
 use std::vec::Vec;
 use std::fmt;
-
-
-pub struct Stat {
-    pub freq: Frequency,
-    pub time_in_state: u64
-}
-
-impl fmt::Display for Stat {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Stat{{freq: {}, time_in_state: {}}}", self.freq, self.time_in_state)
-    }
-}
 
 
 pub struct Iterator {
@@ -116,20 +105,12 @@ impl Cpu {
     /// Set frequency for the given CPU
     /// You should have root privileges to do that
     pub fn set_freq(&self, freq: Frequency) -> Result<&Cpu> {
-        let actual = try!(self.get_freq());
-
         unsafe {
             let result = cpufreq_set_frequency(self.id, freq);
 
             match result {
                 0 => Ok(&self),
-                _ => Err(
-                    ::error::CpuPowerError::FrequencyNotSet{
-                        id: self.id,
-                        actual: actual,
-                        requested: freq,
-                        errno: errno::errno()
-                    })
+                _ => Err(::error::CpuPowerError::SystemError(errno::errno()))
             }
         }
     }
@@ -151,8 +132,8 @@ impl Cpu {
         unsafe {
             let result = cpufreq_modify_policy_max(self.id as u32, max);
             match result {
-                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
-                _ => Ok(())
+                0 => Ok(()),
+                _ => Err(::error::CpuPowerError::SystemError(errno::errno()))
             }
         }
     }
@@ -162,8 +143,8 @@ impl Cpu {
         unsafe {
             let result = cpufreq_modify_policy_min(self.id as u32, min);
             match result {
-                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
-                _ => Ok(())
+                0 => Ok(()),
+                _ => Err(::error::CpuPowerError::SystemError(errno::errno()))
             }
         }
     }
@@ -174,8 +155,8 @@ impl Cpu {
         unsafe {
             let result = cpufreq_modify_policy_governor(self.id as u32, governor.as_ptr() as *mut libc::c_char);
             match result {
-                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
-                _ => Ok(())
+                0 => Ok(()),
+                _ => Err(::error::CpuPowerError::SystemError(errno::errno()))
             }
         }
     }
@@ -202,29 +183,33 @@ impl Cpu {
     }
 
     /// Determine CPUfreq driver used
-    pub fn get_driver(&self) -> String {
+    pub fn get_driver(&self) -> Result<String> {
         unsafe {
             let driver = cpufreq_get_driver(self.id as u32);
             // TODO: Too complicated
-            let result = str::from_utf8(CStr::from_ptr(driver).to_bytes()).unwrap().to_owned();
+            let result = try!(str::from_utf8(CStr::from_ptr(driver).to_bytes())).to_owned();
             cpufreq_put_driver(driver);
 
-            result
+            Ok(result)
         }
     }
 
-    /// Determine CPUfreq policy used
+    /// # Determine CPUfreq policy used
+    ///
+    /// You can try to change current policy by using set_policy method
     pub fn get_policy(&self) -> Result<Policy> {
         unsafe {
             let policy = cpufreq_get_policy(self.id as u32);
 
             if policy.is_null() {
-                return Err(::error::CpuPowerError::SystemError(errno::errno()))
+                return Err(::error::CpuPowerError::SystemError(errno::errno()));
             }
 
             let min = (*policy).min;
             let max = (*policy).max;
-            let governor_name = str::from_utf8(CStr::from_ptr((*policy).governor).to_bytes()).unwrap();
+
+            let governor_name = try!(str::from_utf8(CStr::from_ptr((*policy).governor).to_bytes()));
+
             let result = Policy::new(min, max, governor_name);
             cpufreq_put_policy(policy);
 
@@ -246,8 +231,8 @@ impl Cpu {
             let result = cpufreq_set_policy(self.id as u32, &mut policy as *mut Struct_cpufreq_policy);
 
             match result {
-                0 => Err(::error::CpuPowerError::SystemError(errno::errno())),
-                _ => Ok(())
+                0 => Ok(()),
+                _ => Err(::error::CpuPowerError::SystemError(errno::errno()))
             }
         }
     }
@@ -259,10 +244,10 @@ impl Cpu {
         ::adapters::AvailableGovernors::extract(self.get_id())
     }
 
+    /// Get frequencies available for the given CPU
     pub fn get_available_frequencies(&self) -> Result<Vec<Frequency>> {
         ::adapters::AvailableFrequencies::extract(self.get_id())
     }
-
 
     pub fn get_affected_cpus(&self) -> Result<Vec<Cpu>> {
         let cpus = try!(::adapters::AffectedCpus::extract(self.get_id()));
@@ -271,9 +256,37 @@ impl Cpu {
         Ok(result)
     }
 
-    /// determine stats for cpufreq subsystem
+    pub fn get_related_cpus(&self) -> Result<Vec<Cpu>> {
+        let cpus = try!(::adapters::RelatedCpus::extract(self.get_id()));
+        let mut result = Vec::<Cpu>::new();
+        result.extend(cpus.iter().map(|cpu_id| Cpu::new(*cpu_id)));
+        Ok(result)
+    }
+
+    /// Determine stats for the cpufreq subsystem
     pub fn get_stats(&self) -> Result<Vec<Stat>> {
         ::adapters::Stats::extract(self.get_id())
+    }
+
+    /// Determine total transition coung for this CPU
+    pub fn get_transitions(&self) -> Result<u64> {
+        let result: u64;
+
+        errno::errno();  // Cleaning up existing errno
+
+        unsafe {
+            result = cpufreq_get_transitions(self.id as u32) as u64;
+        }
+
+        if result == 0 {
+            let errno = errno::errno();
+
+            if errno.0 != 0 {
+                return Err(::error::CpuPowerError::SystemError(errno))
+            }
+        }
+
+        Ok(result)
     }
 }
 

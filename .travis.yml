@@ -1,12 +1,5 @@
 language: rust
 rust:
-  - 1.2.0
-
-script: cargo build --verbose
-
-addons:
-  apt:
-    packages:
-    - libcpufreq0
+  - 1.3.0
 
 sudo: false

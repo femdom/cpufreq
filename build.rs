@@ -1,3 +1,5 @@
+extern crate gcc;
+
 use std::process::Command;
 
 
@@ -7,6 +9,7 @@ fn main() {
 
     if status.is_ok() && status.unwrap().success() {
         println!("cargo:rustc-link-lib=cpupower");
+        println!("cargo:rustc-cfg=cpufreq=\"cpupower\"");
         return;
     }
 
@@ -15,6 +18,10 @@ fn main() {
 
     if status.is_ok() && status.unwrap().success() {
         println!("cargo:rustc-link-lib=cpufreq");
+        println!("cargo:rustc-cfg=cpufreq=\"cpufreq\"");
         return;
     }
+
+    println!("cargo:rustc-cfg=cpufreq=\"mock\"");
+    gcc::compile_library("libcpufreq.a", &["src/base/cpufreq.c", "src/base/sysfs.c"]);
 }
