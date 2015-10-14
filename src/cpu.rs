@@ -105,20 +105,12 @@ impl Cpu {
     /// Set frequency for the given CPU
     /// You should have root privileges to do that
     pub fn set_freq(&self, freq: Frequency) -> Result<&Cpu> {
-        let actual = try!(self.get_freq());
-
         unsafe {
             let result = cpufreq_set_frequency(self.id, freq);
 
             match result {
                 0 => Ok(&self),
-                _ => Err(
-                    ::error::CpuPowerError::FrequencyNotSet{
-                        id: self.id,
-                        actual: actual,
-                        requested: freq,
-                        errno: errno::errno()
-                    })
+                _ => Err(::error::CpuPowerError::SystemError(errno::errno()))
             }
         }
     }
