@@ -1,5 +1,5 @@
-//! # The main object for cpupower library's documentation
-//!
+///! # The main object for cpupower library's documentation
+///!
 
 extern crate errno;
 extern crate libc;
