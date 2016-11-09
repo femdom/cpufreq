@@ -5,6 +5,8 @@ use std::ffi;
 use std::error;
 use std::fmt;
 use std::str;
+use std::string;
+
 
 #[derive(Debug)]
 pub enum CpuPowerError {
@@ -28,6 +30,7 @@ pub enum CpuPowerError {
         parent: Box<error::Error>
     },
     Utf8Error(str::Utf8Error),
+    FromUtf8Error(string::FromUtf8Error),
     NulError(ffi::NulError)
 }
 
@@ -53,6 +56,7 @@ impl fmt::Display for CpuPowerError {
             } => write!(f, "Can't set policy for cpu: {}. {}", id, parent),
             CpuPowerError::SystemError(ref err) => write!(f, "System error: {}", err),
             CpuPowerError::Utf8Error(ref err) => write!(f, "UTF-8 conversion error: {}", err),
+            CpuPowerError::FromUtf8Error(ref err) => write!(f, "UTF-8 conversion error: {}", err),
             CpuPowerError::NulError(ref err) => write!(f, "Null pointer passed: {}", err),
         }
     }
@@ -62,12 +66,13 @@ impl error::Error for CpuPowerError {
     fn description(&self) -> &str {
         match *self {
             CpuPowerError::Unknown => "Unknown error occured",
-            CpuPowerError::CpuNotFound{id} => "Cpu with that id not found",
+            CpuPowerError::CpuNotFound{id: _} => "Cpu with that id not found",
             CpuPowerError::SystemError(_) => "System error represented by errno value",
-            CpuPowerError::FrequencyNotSet{id, requested, actual, errno} => "Frequency wasn't set",
-            CpuPowerError::CantGetPolicy{id, ref parent} => "Can't get policy",
-            CpuPowerError::CantSetPolicy{id, ref parent} => "Can't set policy",
+            CpuPowerError::FrequencyNotSet{id: _, requested: _, actual: _, errno: _} => "Frequency wasn't set",
+            CpuPowerError::CantGetPolicy{id: _, parent: _} => "Can't get policy",
+            CpuPowerError::CantSetPolicy{id: _, parent: _} => "Can't set policy",
             CpuPowerError::Utf8Error(ref err) => error::Error::description(err),
+            CpuPowerError::FromUtf8Error(ref err) => error::Error::description(err),
             CpuPowerError::NulError(ref err) => error::Error::description(err)
         }
     }
@@ -75,7 +80,8 @@ impl error::Error for CpuPowerError {
     fn cause(&self) -> Option<&error::Error> {
         match *self {
             CpuPowerError::Utf8Error(ref err) => Some(err),
-            CpuPowerError::CantGetPolicy{id, ref parent} => Some(parent.deref()),
+            CpuPowerError::FromUtf8Error(ref err) => Some(err),
+            CpuPowerError::CantGetPolicy{id: _, ref parent} => Some(parent.deref()),
             _ => None
         }
     }
@@ -87,6 +93,11 @@ impl From<str::Utf8Error> for CpuPowerError {
     }
 }
 
+impl From<string::FromUtf8Error> for CpuPowerError {
+    fn from(error: string::FromUtf8Error) -> CpuPowerError {
+        CpuPowerError::FromUtf8Error(error)
+    }
+}
 
 impl From<ffi::NulError> for CpuPowerError {
     fn from(source: ffi::NulError) -> CpuPowerError {

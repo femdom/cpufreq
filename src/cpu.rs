@@ -11,6 +11,7 @@ use ::result::Result;
 use ::types::{CpuId, Frequency};
 use ::adapters::Extract;
 
+use std::os::raw::c_char;
 use std::ffi::{CStr, CString};
 use std::iter;
 use std::str;
@@ -185,12 +186,20 @@ impl Cpu {
     /// Determine CPUfreq driver used
     pub fn get_driver(&self) -> Result<String> {
         unsafe {
-            let driver = cpufreq_get_driver(self.id as u32);
+            let driver_name_ptr: *mut c_char = cpufreq_get_driver(self.id as u32);
             // TODO: Too complicated
-            let result = try!(str::from_utf8(CStr::from_ptr(driver).to_bytes())).to_owned();
-            cpufreq_put_driver(driver);
 
-            Ok(result)
+            if driver_name_ptr.is_null() {
+                return Err(::error::CpuPowerError::SystemError(errno::errno()));
+            }
+
+            let driver_name: CString = CStr::from_ptr(driver_name_ptr).to_owned();
+            cpufreq_put_driver(driver_name_ptr);
+
+            match String::from_utf8(driver_name.into_bytes()) {
+                Ok(result) => Ok(result),
+                Err(error) => Err(::error::CpuPowerError::FromUtf8Error(error))
+            }
         }
     }
 
@@ -208,12 +217,14 @@ impl Cpu {
             let min = (*policy).min;
             let max = (*policy).max;
 
-            let governor_name = try!(str::from_utf8(CStr::from_ptr((*policy).governor).to_bytes()));
+            let result = match str::from_utf8(CStr::from_ptr((*policy).governor).to_bytes()) {
+                Ok(governor_name) => Ok(Policy::new(min, max, governor_name)),
+                Err(error) => return Err(::error::CpuPowerError::Utf8Error(error))
+            };
 
-            let result = Policy::new(min, max, governor_name);
             cpufreq_put_policy(policy);
 
-            Ok(result)
+            return result;
         }
     }
 
@@ -268,7 +279,7 @@ impl Cpu {
         ::adapters::Stats::extract(self.get_id())
     }
 
-    /// Determine total transition coung for this CPU
+    /// Determine total transition count for this CPU
     pub fn get_transitions(&self) -> Result<u64> {
         let result: u64;
 

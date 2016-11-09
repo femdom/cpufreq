@@ -8,8 +8,6 @@ use ::types::*;
 use ::result::Result;
 use ::stat::Stat;
 
-struct CpufreqPolicy;
-
 
 pub trait Extract<R> {
     type Source;

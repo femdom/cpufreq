@@ -11,7 +11,7 @@ description = "Rust interface to the linux cpufreq library"
 documentation = "https://femdom.github.io/cpufreq/cpupower/"
 repository = "https://github.com/femdom/cpufreq"
 keywords = ["ffi", "bindings", "linux", "cpufreq", "cpupower"]
-license = "MIT"
+license = "MIT/Apache-2.0"
 libs = "cpupower"
 
 
