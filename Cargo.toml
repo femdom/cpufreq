@@ -16,10 +16,10 @@ libs = "cpupower"
 
 
 [dependencies]
-libc = "*"
+libc = "~0.2"
 
 [dependencies.errno]
-version = "0.1.4"
+version = "~0.1"
 
 [build-dependencies]
-gcc = "*"
+gcc = "~0.3"
