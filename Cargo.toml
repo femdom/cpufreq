@@ -1,6 +1,6 @@
 [package]
 name = "cpufreq"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Renat Galimov <renat2017@gmail.com>"]
 include = [
     "**/*.rs",

@@ -3,14 +3,8 @@
 extern crate libc;
 extern crate errno;
 
-use ::types::Frequency;
 use std::iter::Iterator;
-use std::env;
 use ::cpu::Cpu;
-use std::fs;
-use std::path::Path;
-use std::io;
-use std::result;
 
 /// Get policy test case
 
