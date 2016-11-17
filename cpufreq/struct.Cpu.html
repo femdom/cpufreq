@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Cpu` struct in crate `cpufreq`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Cpu">
+
+    <title>cpufreq::Cpu - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>cpufreq</a></p><script>window.sidebarCurrent = {name: 'Cpu', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>cpufreq</a>::<wbr><a class='struct' href=''>Cpu</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-423' class='srclink' href='../src/cpufreq/src/cpu.rs.html#45-49' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Cpu { /* fields omitted */ }</pre><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../cpufreq/struct.Cpu.html' title='cpufreq::Cpu'>Cpu</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-218' class='srclink' href='../src/cpufreq/src/cpu.rs.html#52-302' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.get_all' class='method'><span id='get_all.v' class='invisible'><code>fn <a href='#method.get_all' class='fnname'>get_all</a>() -&gt; <a class='struct' href='../cpufreq/struct.Iterator.html' title='cpufreq::Iterator'>Iterator</a></code></span></h4>
+<div class='docblock'><p>Iterate over all Cpu&#39;s available in your system</p>
+</div><h4 id='method.exists' class='method'><span id='exists.v' class='invisible'><code>fn <a href='#method.exists' class='fnname'>exists</a>(id: <a class='type' href='../cpufreq/type.CpuId.html' title='cpufreq::CpuId'>CpuId</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></span></h4>
+<div class='docblock'><p>Check whether a Cpu with given ID exists in you system</p>
+</div><h4 id='method.new' class='method'><span id='new.v' class='invisible'><code>fn <a href='#method.new' class='fnname'>new</a>(id: <a class='type' href='../cpufreq/type.CpuId.html' title='cpufreq::CpuId'>CpuId</a>) -&gt; <a class='struct' href='../cpufreq/struct.Cpu.html' title='cpufreq::Cpu'>Cpu</a></code></span></h4>
+<h4 id='method.get_freq' class='method'><span id='get_freq.v' class='invisible'><code>fn <a href='#method.get_freq' class='fnname'>get_freq</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='type' href='../cpufreq/type.Frequency.html' title='cpufreq::Frequency'>Frequency</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Get frequency reported by hardware or by kernel
+This function tries to get freq using call to hardware first,
+and if that call fails - uses call to kernel</p>
+</div><h4 id='method.get_freq_kernel' class='method'><span id='get_freq_kernel.v' class='invisible'><code>fn <a href='#method.get_freq_kernel' class='fnname'>get_freq_kernel</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='type' href='../cpufreq/type.Frequency.html' title='cpufreq::Frequency'>Frequency</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Get frequency reported by your kernel
+According to the underlying library documentation -
+you don&#39;t need to be root to perform this operation</p>
+</div><h4 id='method.get_freq_hardware' class='method'><span id='get_freq_hardware.v' class='invisible'><code>fn <a href='#method.get_freq_hardware' class='fnname'>get_freq_hardware</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='type' href='../cpufreq/type.Frequency.html' title='cpufreq::Frequency'>Frequency</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Get frequency reported by your hardware
+According to the underlying library documentation -
+you should be root to perform this operation</p>
+</div><h4 id='method.set_freq' class='method'><span id='set_freq.v' class='invisible'><code>fn <a href='#method.set_freq' class='fnname'>set_freq</a>(&amp;self, freq: <a class='type' href='../cpufreq/type.Frequency.html' title='cpufreq::Frequency'>Frequency</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;&amp;<a class='struct' href='../cpufreq/struct.Cpu.html' title='cpufreq::Cpu'>Cpu</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Set frequency for the given CPU
+You should have root privileges to do that</p>
+</div><h4 id='method.get_transition_latency' class='method'><span id='get_transition_latency.v' class='invisible'><code>fn <a href='#method.get_transition_latency' class='fnname'>get_transition_latency</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Determine CPUs transition latency
+Returns: transition latency in nanoseconds (10<sup>-9</sup> s)</p>
+</div><h4 id='method.modify_policy_max' class='method'><span id='modify_policy_max.v' class='invisible'><code>fn <a href='#method.modify_policy_max' class='fnname'>modify_policy_max</a>(&amp;self, max: <a class='type' href='../cpufreq/type.Frequency.html' title='cpufreq::Frequency'>Frequency</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Modify current policy by changing it&#39;s max frequency</p>
+</div><h4 id='method.modify_policy_min' class='method'><span id='modify_policy_min.v' class='invisible'><code>fn <a href='#method.modify_policy_min' class='fnname'>modify_policy_min</a>(&amp;self, min: <a class='type' href='../cpufreq/type.Frequency.html' title='cpufreq::Frequency'>Frequency</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Modify current policy by changing it&#39;s min frequency</p>
+</div><h4 id='method.modify_policy_governor' class='method'><span id='modify_policy_governor.v' class='invisible'><code>fn <a href='#method.modify_policy_governor' class='fnname'>modify_policy_governor</a>(&amp;self, governor: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Modify current policy by changing it&#39;s governor</p>
+</div><h4 id='method.get_hardware_limits' class='method'><span id='get_hardware_limits.v' class='invisible'><code>fn <a href='#method.get_hardware_limits' class='fnname'>get_hardware_limits</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='type' href='../cpufreq/type.Frequency.html' title='cpufreq::Frequency'>Frequency</a>, <a class='type' href='../cpufreq/type.Frequency.html' title='cpufreq::Frequency'>Frequency</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Determine hardware CPU frequency limits</p>
+
+<p>These may be limited further by thermal, energy or other
+considerations by cpufreq policy notifiers in the kernel.</p>
+</div><h4 id='method.get_id' class='method'><span id='get_id.v' class='invisible'><code>fn <a href='#method.get_id' class='fnname'>get_id</a>(&amp;self) -&gt; <a class='type' href='../cpufreq/type.CpuId.html' title='cpufreq::CpuId'>CpuId</a></code></span></h4>
+<div class='docblock'><p>Get if of the current processor</p>
+</div><h4 id='method.get_driver' class='method'><span id='get_driver.v' class='invisible'><code>fn <a href='#method.get_driver' class='fnname'>get_driver</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Determine CPUfreq driver used</p>
+</div><h4 id='method.get_policy' class='method'><span id='get_policy.v' class='invisible'><code>fn <a href='#method.get_policy' class='fnname'>get_policy</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../cpufreq/struct.Policy.html' title='cpufreq::Policy'>Policy</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'>
+<h1 id='determine-cpufreq-policy-used' class='section-header'><a href='#determine-cpufreq-policy-used'>Determine CPUfreq policy used</a></h1>
+<p>You can try to change current policy by using set_policy method</p>
+</div><h4 id='method.set_policy' class='method'><span id='set_policy.v' class='invisible'><code>fn <a href='#method.set_policy' class='fnname'>set_policy</a>(&amp;self, policy: &amp;<a class='struct' href='../cpufreq/struct.Policy.html' title='cpufreq::Policy'>Policy</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Set new CPUfreq policy to use
+This tries to set the passed policy as new policy as close as possible,
+but results may differ depending e.g. on governors being available.</p>
+</div><h4 id='method.get_available_governors' class='method'><span id='get_available_governors.v' class='invisible'><code>fn <a href='#method.get_available_governors' class='fnname'>get_available_governors</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>determine CPUfreq governors currently available</p>
+
+<p>may be modified by modprobe&#39;ing or rmmod&#39;ing other governors</p>
+</div><h4 id='method.get_available_frequencies' class='method'><span id='get_available_frequencies.v' class='invisible'><code>fn <a href='#method.get_available_frequencies' class='fnname'>get_available_frequencies</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='type' href='../cpufreq/type.Frequency.html' title='cpufreq::Frequency'>Frequency</a>&gt;,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Get frequencies available for the given CPU</p>
+</div><h4 id='method.get_affected_cpus' class='method'><span id='get_affected_cpus.v' class='invisible'><code>fn <a href='#method.get_affected_cpus' class='fnname'>get_affected_cpus</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='../cpufreq/struct.Cpu.html' title='cpufreq::Cpu'>Cpu</a>&gt;,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<h4 id='method.get_related_cpus' class='method'><span id='get_related_cpus.v' class='invisible'><code>fn <a href='#method.get_related_cpus' class='fnname'>get_related_cpus</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='../cpufreq/struct.Cpu.html' title='cpufreq::Cpu'>Cpu</a>&gt;,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<h4 id='method.get_stats' class='method'><span id='get_stats.v' class='invisible'><code>fn <a href='#method.get_stats' class='fnname'>get_stats</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;Stat&gt;,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Determine stats for the cpufreq subsystem</p>
+</div><h4 id='method.get_transitions' class='method'><span id='get_transitions.v' class='invisible'><code>fn <a href='#method.get_transitions' class='fnname'>get_transitions</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>,&nbsp;<a class='enum' href='../cpufreq/enum.CpuPowerError.html' title='cpufreq::CpuPowerError'>CpuPowerError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Determine total transition count for this CPU</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../cpufreq/struct.Cpu.html' title='cpufreq::Cpu'>Cpu</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-425' class='srclink' href='../src/cpufreq/src/cpu.rs.html#44' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class='method'><span id='fmt.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></span></h4>
+<div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html' title='core::fmt::Display'>Display</a> for <a class='struct' href='../cpufreq/struct.Cpu.html' title='cpufreq::Cpu'>Cpu</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-302' class='srclink' href='../src/cpufreq/src/cpu.rs.html#305-309' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt-1' class='method'><span id='fmt.v-1' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></span></h4>
+<div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "cpufreq";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

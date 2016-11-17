@@ -12,11 +12,14 @@
 /*globals $: true, rootPath: true */
 
 document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+
     if (!window.playgroundUrl) {
         return;
     }
 
-    var elements = document.querySelectorAll('pre.rust');
+    var featureRegexp = new RegExp('^\s*#!\\[feature\\(\.*?\\)\\]');
+    var elements = document.querySelectorAll('pre.rust-example-rendered');
 
     Array.prototype.forEach.call(elements, function(el) {
         el.onmouseover = function(e) {
@@ -24,24 +27,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            var a = document.createElement('a');
-            a.textContent = '⇱';
-            a.setAttribute('class', 'test-arrow');
+            var a = el.querySelectorAll('a.test-arrow')[0];
 
             var code = el.previousElementSibling.textContent;
-            a.setAttribute('href', window.playgroundUrl + '?code=' +
-                           encodeURIComponent(code));
-            a.setAttribute('target', '_blank');
 
-            el.appendChild(a);
-        };
-
-        el.onmouseout = function(e) {
-            if (el.contains(e.relatedTarget)) {
-                return;
+            var channel = '';
+            if (featureRegexp.test(code)) {
+                channel = '&version=nightly';
             }
 
-            el.removeChild(el.querySelectorAll('a.test-arrow')[0]);
+            a.setAttribute('href', window.playgroundUrl + '?code=' +
+                           encodeURIComponent(code) + channel);
         };
     });
 });
