@@ -18,3 +18,4 @@ mod stat;
 pub use types::*;
 pub use cpu::*;
 pub use policy::*;
+pub use error::*;
